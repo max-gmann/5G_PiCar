@@ -27,7 +27,7 @@ cfg.DATASETS.TRAIN = ("stop_sign_Train",)
 cfg.DATASETS.TEST = ("stop_sign_Test",)
 cfg.DATALOADER.NUM_WORKERS = 2
 
-cfg.MODEL.WEIGHTS = r"C:\Users\max24\Downloads\model_final.pth"
+cfg.MODEL.WEIGHTS = r"C:\OFFLINE\IV_Projekte\picarv_Stopschild\5G_PiCar\model_final.pth"
 # model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml")  # Let training initialize from model zoo
 cfg.SOLVER.IMS_PER_BATCH = 16  # This is the real "batch size" commonly known to deep learning people
 cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
@@ -81,8 +81,8 @@ active = False
 
 import requests, time
 
-pi_url = "http://192.168.178.156:8000/run/"
-video_url = "http://192.168.178.156:8765/mjpg"
+pi_url = "http://192.168.0.168:8000/run/"
+video_url = "http://192.168.0.168:8765/mjpg"
 cap = cv2.VideoCapture(video_url)
 
 pi_forward = {"action": "forward"}
@@ -166,6 +166,7 @@ while True:
                 border_color = [255, 0, 0]
             else:
                 requests.get(pi_url, pi_forward)
+                #hier die Kurvenfahrt
                 border_color = [0, 255, 0]
 
         v = Visualizer(img[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=2.0)
