@@ -5,10 +5,11 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - numpy
+  - opencv
+  - pandas
   - pip
   - pytorch
-  - opencv
   - pip:
-    - requests
     - matplotlib
-    - pandas
+    - requests
