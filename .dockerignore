@@ -1,11 +1,10 @@
 venv/
-model_final.pth
-test
-*.pth
-__pycache__/
+Dockerfile
+.dockerignore
 .gitignore
 .vscode
 .git
 .DS_Store
+README.md
 **/__pycache__
 *.pyc

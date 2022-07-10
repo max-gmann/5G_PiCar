@@ -1,14 +1,15 @@
 name: detectron2
 channels:
   - pytorch
-  - conda-forge
   - anaconda
+  - conda-forge
   - defaults
 dependencies:
+  - numpy
+  - opencv
+  - pandas
   - pip
   - pytorch
-  - opencv
   - pip:
-    - requests
     - matplotlib
-    - pandas
+    - requests
