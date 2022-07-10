@@ -1,16 +1,18 @@
 import cv2
 import time
 import logging
-logging.basicConfig(format='[%(asctime)s | Streaming_Controls | %(levelname)s] - %(message)s', level=logging.DEBUG)
-
+from threading import Thread
 
 class video_streamer():
     WIDTH = 640
     HEIGHT = 480
+    WIDTH = 320
+    HEIGHT = 240
     
     default_window_title = "Pi Car Demo"
 
     fps_counter_position = (20, 460)
+    fps_counter_position = (10, 230)
 
     font                   = cv2.FONT_HERSHEY_SIMPLEX
     fontScale              = 0.8
@@ -33,22 +35,65 @@ class video_streamer():
         self.scheduler = fps_counter(fps_limit)
         self.__set_capture()
 
+        # thread initialization
+        self.stopped = True
+        self.t = Thread(target=self.update, args=())
+        self.t.daemon = True
+
+    def start(self):
+        self.stopped = False
+        self.t.start()
+
+    def update(self):
+        while True:
+            if self.stopped is True:
+                break
+            self.get_image()
+            if self.grabbed is False:
+                logging.warning("No frames to read. Exiting...")
+                self.stopped = True
+                break
+
+        self.cap.release()
+    
+    def read(self):
+        return self.last_frame
+
+    def stop(self):
+        self.stopped = True
+
     # Initializes the capture if webcam is used for debugging
     def __set_capture(self):
-        if self.streaming_url != 0:
-            self.cap = None
-        else:
-            self.cap = cv2.VideoCapture(self.streaming_url)
-            self.cap.set(3,video_streamer.WIDTH) 
-            self.cap.set(4,video_streamer.HEIGHT) 
+        self.cap = cv2.VideoCapture(self.streaming_url)
+        if self.cap.isOpened() is False:
+            logging.warning("Error accessing video stream. Exiting...")
+            exit(0)
 
-    # returns true if new image is available
-    def next(self):
-        return self.scheduler.next()
+        fps_input_stream = self.cap.get(5) # hardware fps
+        logging.info(f"Hardware FPS: {fps_input_stream}")
+        
+        self.cap.set(3,video_streamer.WIDTH) 
+        self.cap.set(4,video_streamer.HEIGHT) 
+
+        # reading initial frame for initialization
+        self.grabbed, self.last_frame = self.cap.read()
+
+        if self.grabbed is False:
+            logging.warning("No frames to read. Exiting...")
+            exit(0)
+
+        if self.streaming_url != 0:
+            self.cap.release()
+            self.cap = None
+
+    # returns true if new frame is scheduled according to fps limit
+    def next(self, logging=True):
+        return self.scheduler.next(logging)
 
     # closes the capture and shuts everything down
     def close(self):
         logging.debug("Shutting down streamer.")
+        self.stop()
         cv2.destroyAllWindows() 
         cv2.waitKey(1)
         if self.streaming_url == 0:
@@ -59,12 +104,10 @@ class video_streamer():
         try:
             if self.streaming_url != 0:
                 self.cap = cv2.VideoCapture(self.streaming_url)
-            success, img = self.cap.read()
-            self.last_frame = img
+            self.grabbed, self.last_frame = self.cap.read()
         except Exception as e:
             logging.warning("Couldnt capture or read video stream.")
             logging.warning(e.with_traceback)
-            img = None
         finally:
             if self.streaming_url != 0:
                 self.cap.release()
@@ -95,7 +138,6 @@ class video_streamer():
         # Show image with openCV
         cv2.imshow(window_title, output_img)
 
-        return output_img
     
     # adds the overlays specified in the constructor
     def add_overlay(self, img):
@@ -147,7 +189,7 @@ class fps_counter():
         self.prev_frame_time = 0
         self.new_frame_time = 0
 
-    def next(self):
+    def next(self, logging=True):
         time_elapsed = time.time() - self.prev
         if time_elapsed > 1./self.fps_limit:
             self.prev = time.time()
@@ -157,7 +199,8 @@ class fps_counter():
             self.fps = 1/(self.new_frame_time-self.prev_frame_time)
             self.prev_frame_time = self.new_frame_time
             self.fps = int(self.fps) + 1
-            logging.debug(f"FPS: {self.fps}")
+            if logging:
+                logging.debug(f"FPS: {self.fps}")
             return True
         else:
             return False
