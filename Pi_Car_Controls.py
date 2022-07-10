@@ -1,6 +1,5 @@
 import requests#
 import logging
-logging.basicConfig(format='[%(asctime)s | Pi_Car_Controls | %(levelname)s] - %(message)s', level=logging.DEBUG)
 
 class pi_car:
     # Connection Settings
