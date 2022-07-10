@@ -6,13 +6,10 @@ from threading import Thread
 class video_streamer():
     WIDTH = 640
     HEIGHT = 480
-    WIDTH = 320
-    HEIGHT = 240
     
     default_window_title = "Pi Car Demo"
 
     fps_counter_position = (20, 460)
-    fps_counter_position = (10, 230)
 
     font                   = cv2.FONT_HERSHEY_SIMPLEX
     fontScale              = 0.8
