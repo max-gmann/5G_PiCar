@@ -22,7 +22,7 @@ class video_streamer():
 
     def __init__(self, 
                 streaming_url = 0, 
-                fps_limit = 24, 
+                fps_limit = 30, 
                 overlays=['fps', 'size', 'border', 'bbox']):
 
         self.streaming_url = streaming_url
@@ -79,9 +79,9 @@ class video_streamer():
             logging.warning("No frames to read. Exiting...")
             exit(0)
 
-        if self.streaming_url != 0:
-            self.cap.release()
-            self.cap = None
+        # if self.streaming_url != 0:
+        #     self.cap.release()
+        #     self.cap = None
 
     # returns true if new frame is scheduled according to fps limit
     def next(self, logging=True):
@@ -99,15 +99,15 @@ class video_streamer():
     # returns a new image
     def get_image(self):
         try:
-            if self.streaming_url != 0:
-                self.cap = cv2.VideoCapture(self.streaming_url)
+            # if self.streaming_url != 0:
+            #     self.cap = cv2.VideoCapture(self.streaming_url)
             self.grabbed, self.last_frame = self.cap.read()
         except Exception as e:
             logging.warning("Couldnt capture or read video stream.")
             logging.warning(e.with_traceback)
-        finally:
-            if self.streaming_url != 0:
-                self.cap.release()
+        # finally:
+        #     if self.streaming_url != 0:
+        #         self.cap.release()
 
         return self.last_frame
 
