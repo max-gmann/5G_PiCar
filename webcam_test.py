@@ -1,125 +1,30 @@
+from abc import abstractclassmethod
 import  time
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 import pandas as pd
-import detectron2
-import torch, detectron2
+import torch
 import os, time
-from detectron2 import model_zoo
-from detectron2.engine import DefaultPredictor
-from detectron2.config import get_cfg
-from detectron2.utils.visualizer import Visualizer
-from detectron2.data import MetadataCatalog, DatasetCatalog
 from threading import Thread
 
-from detectron2.utils.logger import setup_logger
-setup_logger()
 import logging
 logging.basicConfig(format='[%(asctime)s | %(module)s | %(levelname)s] - %(message)s', level=logging.DEBUG)
 
 from Pi_Car_Controls import pi_car
-from Streaming_Controls import video_streamer
-
-
-class visualizer():
-
-    def __init__(self, streamer, enabled = True):
-        self.streamer = streamer
-
-        self.input_img = None
-        self.last_frame = None
-        self.v = None
-
-        self.relative_size_text = None
-        self.color = (100, 100, 100)
-
-        self.enabled = enabled
-
-        self.stopped = True
-        self.t = Thread(target=self.update, args=())
-        self.t.daemon = True
-
-    def start(self):
-        self.stopped = False
-        self.t.start()
-
-    def stop(self):
-        self.stopped = True
-
-    def read(self):
-        if self.last_frame is None:
-            return self.input_img
-        else:
-            return self.last_frame
-
-    def update(self):
-#        time.sleep(1)
-        while True:
-            if self.stopped is True:
-                break
-            if self.input_img is not None:
-
-                if self.enabled:
-                    self.draw_prediction()
-                
-                self.streamer.show(self.read())
-
-                if cv2.waitKey(1) & 0xFF==ord('q'): # quit when 'q' is pressed
-                    self.stop()
-                    break
-    
-    def update_img(self, img, prediction):
-        self.input_img = img
-        self.prediction = prediction
-
-    def show_relative_size(self, text):
-        self.relative_size_text = text
-
-    def set_color(self, color):
-        self.color = color
-
-    def draw_prediction(self):
-        bboxes = self.prediction['instances'].pred_boxes.to('cpu').tensor.numpy()
-        num_instances = len(bboxes)
-        if num_instances > 0:
-            if num_instances > 1:
-                scores = self.prediction['instances'].scores.tolist()
-                index_highest_prob = scores.index(max(scores))
-            else:
-                index_highest_prob = 0
-
-            box = bboxes[index_highest_prob]
-            input = self.input_img.copy()
-            self.last_frame = cv2.rectangle(
-                input,
-                (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), 
-                self.color, 
-                2)
-
-            self.last_frame = cv2.putText(self.last_frame, "Stop-Sign", (int(box[0]), int(box[1]-8)),
-                video_streamer.font, 
-                0.4,
-                self.color,
-                1,
-                video_streamer.lineType)
-            
-            if self.show_relative_size is not None:
-                self.last_frame = cv2.putText(self.last_frame, f"{self.relative_size_text}", (int(box[0]), int(box[3]+ 10)),
-                video_streamer.font, 
-                0.4,
-                self.color,
-                1,
-                video_streamer.lineType)
-        else:
-            self.last_frame = self.input_img
-        
-
-
+from Streaming_Controls import video_streamer, video_player
 
 class obstacle():
     def __init__(self, name):
         self.name = name
+
+    @abstractclassmethod
+    def analyse_image(self, image):
+        pass
+
+    @abstractclassmethod
+    def __get_control_output():
+        pass
 
 class stop_sign(obstacle):
 
@@ -129,33 +34,39 @@ class stop_sign(obstacle):
     FRAMES_TO_CONFIRM_END = 10
     WAIT_TIME = 4.0
 
-    def __init__(self):
+    def __init__(self, model = "yolo"):
         super().__init__("stop_sign")
-        self.__build_model()
+
+        self.__build_yolo_model()
+        self.bboxes = [0,0,0,0]
         self.frames_seen = 0
         self.frames_not_seen = 0
         self.relative_size = None
         self.active = 0
         self.released = True
         self.wait_timer_start = None
+        self.num_instances = 0
+    
 
-    def __build_model(self):
-        self.cfg = get_cfg()
-        self.cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml"))
-        self.cfg.DATALOADER.NUM_WORKERS = 2
-        self.cfg.MODEL.WEIGHTS = r"model_final.pth"
-        self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
-        self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.95   
-        self.predictor = DefaultPredictor(self.cfg)
+    def __build_yolo_model(self):
+        self.predictor = torch.hub.load('ultralytics/yolov5', 'yolov5n')
 
     def __detect_stop_signs(self):
         self.prediction = self.predictor(self.image)
+   
+        for instance in self.prediction.xyxy:
+            if len(instance.tolist()) != 0:
+                label =  self.prediction.names[int(instance.tolist()[0][-1])]
+                if label == "stop sign":
+                    self.bboxes = instance.tolist()[0][:4]
+                    self.num_instances = len(self.prediction.xyxy)
 
-        self.bboxes = self.prediction['instances'].pred_boxes.to('cpu').tensor.numpy()
-        self.num_instances = len(self.bboxes) 
+    def analyse_image(self, img, model_input_size = (640, 360)):
+        
+        # resize image
+        resized = cv2.resize(img, model_input_size, interpolation = cv2.INTER_AREA)
 
-    def analyse_image(self, img):
-        self.image = img
+        self.image = resized
 
         self.__detect_stop_signs()
 
@@ -179,7 +90,7 @@ class stop_sign(obstacle):
                 self.frames_not_seen = 0
                 self.frames_seen = 0
 
-        return self.__get_control_output(), self.prediction, self.__get_color_code(), self.relative_size
+        return self.__get_control_output(), self.bboxes, self.__get_color_code(), self.relative_size
 
     def __get_color_code(self):
         if self.active and not self.released:
@@ -212,38 +123,48 @@ class stop_sign(obstacle):
             self.released = False
 
     def __get_relative_size(self):
-        box = self.bboxes[0]
-        height = max(box[0], box[2]) - min(box[0], box[2])
-        
-        img_height = self.image.shape[0]
-        self.relative_size = round((height / img_height), 2)
+        if self.bboxes is not [0,0,0,0]:
+            box = self.bboxes
+            height = max(box[0], box[2]) - min(box[0], box[2])
+            
+            img_height = self.image.shape[0]
+            self.relative_size = round((height / img_height), 2)
+        else:
+            self.relative_size = 0.0
 
 
-# with pi_car(default_speed=30) as car:
+with pi_car(default_speed=30) as car:
 
-streamer = video_streamer(streaming_url = 0, fps_limit=30)
-streamer.start()
+    streamer = video_streamer(streaming_url =pi_car.video_url, 
+                            fps_limit=1, 
+                            print_logging = True)
+    streamer.start()
 
-vis = visualizer(streamer, enabled=True)
-vis.start() 
+    player = video_player(streamer.read())
+    player.start()
 
-stop = stop_sign()
+    stop = stop_sign()
 
-while True:
-    if streamer.next(logging=False):
-        current_img = streamer.read()
-        control_output, prediction, border_color, relative_size = stop.analyse_image(current_img)
-        logging.debug(control_output)
+    while True:
+        if streamer.next():
+            current_img = streamer.read()
 
-        streamer.set_border_color(border_color)
-        vis.set_color(border_color)
-        vis.show_relative_size(relative_size)
 
-        vis.update_img(current_img, prediction)        
+            t1 = time.time()
+            control_output, bboxes, border_color, relative_size = stop.analyse_image(current_img)
+            logging.debug(control_output)
 
-    if vis.stopped: # quit when 'q' is pressed
-        streamer.close()
-        break
+            streamer.set_border_color(border_color)
+            player.set_color(border_color)
+            player.show_relative_size(relative_size)
+            t2 = time.time()
+            logging.debug(f"Processing time: {t2 - t1}s")
+
+            player.update_img(current_img, bboxes)        
+
+        if player.stopped or streamer.stopped: # quit when 'q' is pressed
+            streamer.close()
+            break
 
 
 

@@ -15,6 +15,7 @@ class pi_car:
     move_right = {"action": "fwright"}
     move_straight = {"action": "fwstraight"}
     move_ready = {"action": "fwready"}
+    move_turn = {"action": "fwturn:"}
 
     # Camera Controls
     cam_ready = {"action": "camready"}
@@ -32,7 +33,6 @@ class pi_car:
         # set angle to turn the camera
         self.camera_turn_angle_lr = default_camera_turn_angle_lr
         self.camera_turn_angle_ud = default_camera_turn_angle_ud
-        pass
 
     def __enter__(self):
         logging.debug("Performing System Check...")
@@ -95,6 +95,10 @@ class pi_car:
         requests.get(pi_car.control_url, pi_car.move_left)
         logging.debug("Left")
     
+    def turn(self, turn_angle):
+        requests.get(pi_car.control_url, {'action': 'fwturn:'+ str(turn_angle)})
+        logging.debug(f"Turning {turn_angle}")
+
     def right(self):
         requests.get(pi_car.control_url, pi_car.move_right)
         logging.debug("Right")
