@@ -1,8 +1,8 @@
 name: detectron2
 channels:
   - pytorch
-  - anaconda
   - conda-forge
+  - anaconda
   - defaults
 dependencies:
   - pip

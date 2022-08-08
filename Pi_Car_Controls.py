@@ -3,7 +3,7 @@ import logging
 
 class pi_car:
     # Connection Settings
-    base_url = "http://raspberrypi"
+    base_url = "http://192.168.0.168"
     control_url = base_url + ":8000/run/"
     video_url = base_url + ":8765/mjpg"
 
@@ -13,6 +13,7 @@ class pi_car:
     move_backward = {"action": "backward"}
     move_left = {"action": "fwleft"}
     move_right = {"action": "fwright"}
+    move_turn = {"action" : "fwturn:"}
     move_straight = {"action": "fwstraight"}
     move_ready = {"action": "fwready"}
     move_turn = {"action": "fwturn:"}
@@ -50,6 +51,7 @@ class pi_car:
         self.left()
         self.ready()
         self.right()
+        self.turn()
         self.ready()
         self.forward()
         self.backward()
@@ -102,6 +104,10 @@ class pi_car:
     def right(self):
         requests.get(pi_car.control_url, pi_car.move_right)
         logging.debug("Right")
+
+    def turn(self, turn_angle):
+        requests.get(pi_car.control_url, {'action': 'fwturn:'+ str(turn_angle+90)})
+        logging.debug("turn " + str(turn_angle))
 
     # Camera Controls ###########################################
 

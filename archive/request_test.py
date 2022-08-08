@@ -1,6 +1,6 @@
 import requests, time
 
-pi_url = "http://192.168.178.156:8000/run/"
+pi_url = "http://192.168.0.168:8000/run/"
 
 cam_left = {"action": "camleft"}
 cam_right = {"action": "camright"}
