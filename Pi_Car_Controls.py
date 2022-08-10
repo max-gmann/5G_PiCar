@@ -1,9 +1,10 @@
-import requests#
+import requests
 import logging
+import cv2
 
 class pi_car:
     # Connection Settings
-    base_url = "http://192.168.0.168"
+    base_url = "http://raspberrypi"
     control_url = base_url + ":8000/run/"
     video_url = base_url + ":8765/mjpg"
 
@@ -28,6 +29,8 @@ class pi_car:
     def __init__(self, default_speed=30, 
                 default_camera_turn_angle_lr = 40, # left right
                 default_camera_turn_angle_ud = 20):# up down
+        self.__setup__()
+        
         # set speed / default speed = 30 / 100
         self.speed = self.set_speed(default_speed)
 
@@ -36,37 +39,28 @@ class pi_car:
         self.camera_turn_angle_ud = default_camera_turn_angle_ud
 
     def __enter__(self):
-        logging.debug("Performing System Check...")
-        
-        self.camera_left()
-        self.camera_straight()
-        self.camera_right()
-        self.camera_straight()
-        self.camera_up()
-        self.camera_straight()
-        self.camera_down()
+        logging.info("System Startup...")
+
         self.camera_straight()
         logging.info("Camera check complete.")
 
-        self.left()
         self.ready()
-        self.right()
-        self.turn()
-        self.ready()
-        self.forward()
-        self.backward()
-        self.stop()
         logging.info("Motor & Servo check complete.")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        logging.info("Shutting down...")
+        logging.info("Returning to ready state.")
         self.stop()
         self.ready()
         self.camera_straight()
-        logging.info("Returning to ready state.")
-        logging.debug("Bye Bye")
+        cv2.destroyAllWindows()
+        logging.info("Bye Bye!")
 
-        
+    def __setup__(self):
+        logging.info("Initializing Pi Car")
+        requests.get(self.control_url, {"action": "setup"})
+
     # Movement Controls ###########################################
 
     def set_speed(self, speed):
@@ -75,66 +69,62 @@ class pi_car:
 
     def ready(self):
         requests.get(pi_car.control_url, pi_car.move_ready)
-        logging.debug("Ready")
+        logging.info("Ready")
     
     def forward(self):
         requests.get(pi_car.control_url, pi_car.move_forward)
-        logging.debug("Forward")
+        logging.info("Forward")
     
     def backward(self):
         requests.get(pi_car.control_url, pi_car.move_backward)
-        logging.debug("Backward")
+        logging.info("Backward")
     
     def stop(self):
         requests.get(pi_car.control_url, pi_car.move_stop)
-        logging.debug("Stop")
+        logging.info("Stop")
     
     def straight(self):
         requests.get(pi_car.control_url, pi_car.move_straight)
-        logging.debug("Straight")
+        logging.info("Straight")
     
     def left(self):
         requests.get(pi_car.control_url, pi_car.move_left)
-        logging.debug("Left")
-    
-    def turn(self, turn_angle):
-        requests.get(pi_car.control_url, {'action': 'fwturn:'+ str(turn_angle)})
-        logging.debug(f"Turning {turn_angle}")
+        logging.info("Left")
 
     def right(self):
         requests.get(pi_car.control_url, pi_car.move_right)
-        logging.debug("Right")
+        logging.info("Right")
 
     def turn(self, turn_angle):
         requests.get(pi_car.control_url, {'action': 'fwturn:'+ str(turn_angle+90)})
-        logging.debug("turn " + str(turn_angle))
+        logging.info("turn " + str(turn_angle))
 
     # Camera Controls ###########################################
 
     def camera_straight(self):
         requests.get(pi_car.control_url, pi_car.cam_ready)
-        logging.debug("Camera straight")
+        logging.info("Camera straight")
 
     def camera_up(self, turn_angle = -1):
         if turn_angle == -1:
             turn_angle = self.camera_turn_angle_ud
         requests.get(pi_car.control_url, pi_car.cam_up)
-        logging.debug("Camera up")
+        logging.info("Camera up")
     
     def camera_down(self, turn_angle = -1):
         if turn_angle == -1:
             turn_angle = self.camera_turn_angle_ud
         requests.get(pi_car.control_url, pi_car.cam_down)
-        logging.debug("Camera down")
+        logging.info("Camera down")
     
     def camera_left(self, turn_angle = -1):
         if turn_angle == -1:
             turn_angle = self.camera_turn_angle_lr
         requests.get(pi_car.control_url, pi_car.cam_left)
-        logging.debug("Camera left")
+        logging.info("Camera left")
     
     def camera_right(self, turn_angle = -1):
         if turn_angle == -1:
             turn_angle = self.camera_turn_angle_lr
         requests.get(pi_car.control_url, pi_car.cam_right)
-        logging.debug("Camera right")
+        logging.info("Camera right")
