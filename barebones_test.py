@@ -5,6 +5,7 @@ import logging, time
 logging.basicConfig(format='[%(asctime)s | %(module)s | %(levelname)s] - %(message)s', level=logging.INFO)
 import cv2
 from Object_Detector import stop_sign, person
+from LineFollower import LineFollower
 
 with pi_car(default_speed=30) as car:
 
@@ -16,17 +17,32 @@ with pi_car(default_speed=30) as car:
     stop_sign_detector = stop_sign()
     person_detector = person()
 
+    line_follower = LineFollower()
+    steering_update_freq = 4 # relative to framerate, can never exeed framerate
+    steering_counter = 0
     while True:
         
         frame = streamer.read()        
-        
-        control_output, stop_bbox, border_color, relative_size = stop_sign_detector.analyse_image(frame)
-        person_bbox = person_detector.analyse_image(frame)
+        player.update_frame(frame, fps=True)
 
         if player.next():
-            player.update_frame(frame, fps=True)
-            player.update_bboxes(bbox=stop_bbox, bbox_title="Stop-Sign", bbox_subtitle=relative_size)
-            player.update_bboxes(bbox=person_bbox, bbox_title="Person", color = (100,100,100))
+            steering_counter += 1
+            
+            if steering_counter % steering_update_freq == 0:
+                steering_angle = line_follower.get_streering_angle(frame)
+                car.turn(steering_angle)
+                steering_counter = 0
+            
+            line_follower.draw_annotations(frame)
+
+            stop_sign_detector.get_prediction(frame)
+            control_output, stop_bbox, border_color, relative_size_stop = stop_sign_detector.analyse_image(frame)
+            person_detector.prediction = stop_sign_detector.prediction
+            person_bbox, relative_size_person = person_detector.analyse_image(frame)
+
+
+            player.update_bboxes(bbox=stop_bbox, bbox_title="Stop-Sign", bbox_subtitle=relative_size_stop)
+            player.update_bboxes(bbox=person_bbox, bbox_title="Person", bbox_subtitle=relative_size_person, color = (100,100,100))
             player.update_border(border_color)
             player.show()
         
