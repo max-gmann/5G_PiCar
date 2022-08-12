@@ -10,6 +10,7 @@ class obstacle():
         self.num_instances = 0
         self.bboxes = None
         self.__build_yolo_model()
+        self.relative_size = None
 
     def __build_yolo_model(self):
         self.predictor = torch.hub.load('ultralytics/yolov5', 'yolov5n')
@@ -22,13 +23,19 @@ class obstacle():
     def __get_control_output():
         pass
 
+    def get_prediction(self, image):
+        self.prediction = self.predictor(image)
+        return self.prediction
+
+    
+
 class person(obstacle):
     def __init__(self):
         super().__init__("person")
         self.label = "person"
 
     def analyse_image(self, img):
-        self.prediction = self.predictor(img)
+        self.image = img
         self.num_instances = 0
 
         for instance in self.prediction.xyxy:
@@ -41,15 +48,27 @@ class person(obstacle):
         if self.num_instances == 0:
             self.bboxes = None
             self.num_instances = 0
+        
+        self.__get_relative_size()
+        
+        return self.bboxes, self.relative_size
 
-        return self.bboxes
+    def __get_relative_size(self):
+        if self.bboxes is not None:
+            box = self.bboxes
+            width = max(box[1], box[3]) - min(box[1], box[3])
+            
+            img_width = self.image.shape[1]
+            self.relative_size = round((width / img_width), 2)
+        else:
+            self.relative_size = 0.0
 
 class stop_sign(obstacle):
 
     RELATIVE_SIZE_TO_STOP = 0.1
 
-    FRAMES_TO_CONFIRM_START = 8
-    FRAMES_TO_CONFIRM_END = 20
+    FRAMES_TO_CONFIRM_START = 12
+    FRAMES_TO_CONFIRM_END = 50
     WAIT_TIME = 4.0
 
     def __init__(self):
@@ -64,7 +83,6 @@ class stop_sign(obstacle):
     
 
     def __detect_stop_signs(self):
-        self.prediction = self.predictor(self.image)
         self.num_instances = 0
 
         for instance in self.prediction.xyxy:
@@ -81,9 +99,9 @@ class stop_sign(obstacle):
     def analyse_image(self, img, model_input_size = (640, 480)):
         
         # resize image
-        resized = cv2.resize(img, model_input_size, interpolation = cv2.INTER_AREA)
+        # img = cv2.resize(img, model_input_size, interpolation = cv2.INTER_AREA)
 
-        self.image = resized
+        self.image = img
 
         self.__detect_stop_signs()
 
@@ -140,7 +158,7 @@ class stop_sign(obstacle):
             self.released = False
 
     def __get_relative_size(self):
-        if self.bboxes is not [0,0,0,0]:
+        if self.bboxes is not None:
             box = self.bboxes
             height = max(box[0], box[2]) - min(box[0], box[2])
             

@@ -1,6 +1,8 @@
 import requests
 import logging
 import cv2
+from multiprocessing.dummy import Pool
+import asyncio
 
 class pi_car:
     # Connection Settings
@@ -29,10 +31,20 @@ class pi_car:
     def __init__(self, default_speed=30, 
                 default_camera_turn_angle_lr = 40, # left right
                 default_camera_turn_angle_ud = 20):# up down
+        self.loop = asyncio.get_event_loop()
+
         self.__setup__()
+
+        self.stopped = True
+        self.is_straight = True
+        self.is_left = False
+        self.is_right = False
+        self.is_forward = False
+        self.is_backward = False
         
         # set speed / default speed = 30 / 100
         self.speed = self.set_speed(default_speed)
+        self.pool = Pool(1)
 
         # set angle to turn the camera
         self.camera_turn_angle_lr = default_camera_turn_angle_lr
@@ -72,31 +84,64 @@ class pi_car:
         logging.info("Ready")
     
     def forward(self):
-        requests.get(pi_car.control_url, pi_car.move_forward)
-        logging.info("Forward")
+        self.stopped = False
+        if not self.is_forward:
+            self.is_forward = True
+            self.pool.apply_async(requests.get, [pi_car.control_url, pi_car.move_forward])
+        # requests.get(pi_car.control_url, pi_car.move_forward)
+            logging.info("Forward")
     
     def backward(self):
-        requests.get(pi_car.control_url, pi_car.move_backward)
+        self.stopped = False
+        if not self.is_backward:
+            self.is_backward = True
+            self.pool.apply_async(requests.get, [pi_car.control_url, pi_car.move_backward])
+        # requests.get(pi_car.control_url, pi_car.move_backward)
         logging.info("Backward")
     
     def stop(self):
-        requests.get(pi_car.control_url, pi_car.move_stop)
-        logging.info("Stop")
+        self.is_backward = False
+        self.is_forward = False
+        if not self.stopped:
+            self.stopped = True
+            self.pool.apply_async(requests.get, [pi_car.control_url, pi_car.move_stop])
+        # requests.get(pi_car.control_url, pi_car.move_stop)
+            logging.info("Stop")
     
     def straight(self):
-        requests.get(pi_car.control_url, pi_car.move_straight)
-        logging.info("Straight")
+        self.is_left = False
+        self.is_right = False
+        if not self.is_straight:
+            self.is_straight = True
+            self.pool.apply_async(requests.get, [pi_car.control_url, pi_car.move_straight])
+        # requests.get(pi_car.control_url, pi_car.move_straight)
+            logging.info("Straight")
     
     def left(self):
-        requests.get(pi_car.control_url, pi_car.move_left)
-        logging.info("Left")
+        self.is_straight = False
+        self.is_right = False
+        if not self.is_left:
+            self.is_left = True
+            requests.get(pi_car.control_url, pi_car.move_left)
+            # self.pool.apply_async(requests.get, [pi_car.control_url, pi_car.move_left])
+            logging.info("Left")
 
     def right(self):
-        requests.get(pi_car.control_url, pi_car.move_right)
-        logging.info("Right")
-
+        self.is_left = False
+        self.is_straight = False
+        if not self.is_right:
+            self.is_right = True
+            # self.pool.apply_async(requests.get, [pi_car.control_url, pi_car.move_right])
+            requests.get(pi_car.control_url, pi_car.move_right)
+            logging.info("Right")
+    
+    # 90 = straight
     def turn(self, turn_angle):
-        requests.get(pi_car.control_url, {'action': 'fwturn:'+ str(turn_angle+90)})
+        self.is_straight = False
+        try:
+            self.pool.apply_async(requests.get, [pi_car.control_url, {'action': 'fwturn:'+ str(turn_angle+90)}])
+        except:
+            pass
         logging.info("turn " + str(turn_angle))
 
     # Camera Controls ###########################################
