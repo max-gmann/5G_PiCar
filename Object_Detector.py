@@ -2,8 +2,6 @@ import torch, cv2, time
 from abc import abstractclassmethod
 import logging
 
-
-
 class obstacle():
     def __init__(self, name):
         self.name = name
@@ -26,8 +24,6 @@ class obstacle():
     def get_prediction(self, image):
         self.prediction = self.predictor(image)
         return self.prediction
-
-    
 
 class person(obstacle):
     def __init__(self):
@@ -65,7 +61,7 @@ class person(obstacle):
 
 class stop_sign(obstacle):
 
-    RELATIVE_SIZE_TO_STOP = 0.1
+    RELATIVE_SIZE_TO_STOP = 0.25
 
     FRAMES_TO_CONFIRM_START = 12
     FRAMES_TO_CONFIRM_END = 50

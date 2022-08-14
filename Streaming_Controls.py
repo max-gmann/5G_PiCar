@@ -1,3 +1,4 @@
+from turtle import pos
 import cv2
 import time
 import logging
@@ -158,6 +159,14 @@ class video_player():
 
         self.relative_size_text = ""
         self.color = (100, 100, 100)
+    
+    def print_text(self, text, position=(600, 470), color= (0,0,0), size=0.4):
+        cv2.putText(self.output_image, text, position,
+            video_streamer.font, 
+            size,
+            color,
+            1,
+            video_streamer.lineType)
 
     def update_frame(self, image, fps=True):
         self.output_image = image
