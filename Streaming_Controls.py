@@ -177,6 +177,7 @@ class video_player():
 
     def show(self):
         cv2.imshow(self.window_title, self.output_image)
+        self.output_image = None
 
     def next(self):
         return self.scheduler.next()

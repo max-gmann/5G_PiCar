@@ -138,10 +138,11 @@ class pi_car:
     # 90 = straight
     def turn(self, turn_angle):
         self.is_straight = False
-        try:
-            self.pool.apply_async(requests.get, [pi_car.control_url, {'action': 'fwturn:'+ str(turn_angle+90)}])
-        except:
-            pass
+        requests.get(pi_car.control_url, {'action': 'fwturn:'+ str(turn_angle+90)})
+        # try:
+        #     self.pool.apply_async(requests.get, [pi_car.control_url, {'action': 'fwturn:'+ str(turn_angle+90)}])
+        # except:
+        #     pass
         logging.info("turn " + str(turn_angle))
 
     # Camera Controls ###########################################
