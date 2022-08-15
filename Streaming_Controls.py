@@ -1,4 +1,3 @@
-from turtle import pos
 import cv2
 import time
 import logging

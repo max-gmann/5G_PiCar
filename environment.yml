@@ -1,4 +1,4 @@
-name: detectron2
+name: app
 channels:
   - pytorch
   - conda-forge
@@ -12,3 +12,5 @@ dependencies:
     - requests
     - matplotlib
     - pandas
+    - keyboard
+    - numpy

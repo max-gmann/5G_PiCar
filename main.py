@@ -1,4 +1,4 @@
-import logging, time
+import logging, time, sys
 import numpy as np
 import cv2
 import keyboard
@@ -107,10 +107,13 @@ def main():
         # register keyboard listener for manual controls
         keyboard.hook(callback_fnc) 
 
+        # main control loop
         while True:
             
+            # read frame from webcam streamer
             frame = streamer.read()        
 
+            # add random delay to simulate 4g mode
             if not mode.is_5g:
                 random_delay = abs(np.random.normal(loc=80, scale=20))
                 print(random_delay)
@@ -168,4 +171,5 @@ def main():
 
 
 if __name__ == "__main__":
+    print(sys.argv)
     main()
