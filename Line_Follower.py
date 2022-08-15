@@ -30,9 +30,9 @@ class LineFollower():
         cropped_frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2GRAY)
         cv2.imshow("debug", cropped_frame)
         if mode == 'dark':
-            ret, mask = cv2.threshold(cropped_frame, self.threshold_dark, 255, cv2.THRESH_BINARY)
+            ret, mask = cv2.threshold(cropped_frame, self.threshold_dark, 255, cv2.THRESH_BINARY_INV)
         else:
-            ret, mask = cv2.threshold(cropped_frame, self.threshold_light, 255, cv2.THRESH_BINARY_INV)
+            ret, mask = cv2.threshold(cropped_frame, self.threshold_light, 255, cv2.THRESH_BINARY)
 
         cv2.imshow("mask", mask)
         # mask = cv2.inRange(cropped_frame, self.high_b, self.low_b)

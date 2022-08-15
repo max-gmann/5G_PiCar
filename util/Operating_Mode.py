@@ -47,3 +47,6 @@ class Mode:
     def toggle_line_color(self):
         logging.info("Toggling line color to follow.")
         self.line_color_dark = not self.line_color_dark
+
+    def get_connection_mode(self):
+        return self.is_5g

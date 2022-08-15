@@ -113,11 +113,6 @@ def main():
             # read frame from webcam streamer
             frame = streamer.read()        
 
-            # add random delay to simulate 4g mode
-            if not mode.is_5g:
-                random_delay = abs(np.random.normal(loc=80, scale=20))
-                print(random_delay)
-                time.sleep(random_delay / 1000)    
 
             player.update_frame(frame, fps=True)     # update player with current frame and add fps annotation (doesnt display it yet)
 
