@@ -1,4 +1,5 @@
 venv/
+archive/
 Dockerfile
 .dockerignore
 .gitignore

@@ -1,6 +1,7 @@
 import cv2
 import time
 import logging
+# logging.basicConfig(format='[%(asctime)s | %(module)s | %(levelname)s] - %(message)s', level=logging.INFO)
 from threading import Thread
 
 class video_streamer():
@@ -21,15 +22,10 @@ class video_streamer():
     default_border_color = [255, 0, 0]
 
     def __init__(self, 
-                streaming_url = 0, 
-                fps_limit = 24, 
-                overlays=['fps', 'size', 'border', 'bbox']):
+                streaming_url = 0):
 
         self.streaming_url = streaming_url
-        self.overlays = overlays
-        self.border_color = video_streamer.default_border_color
-        self.fps_limit = fps_limit
-        self.scheduler = fps_counter(fps_limit)
+        
         self.__set_capture()
 
         # thread initialization
@@ -42,6 +38,8 @@ class video_streamer():
         self.t.start()
 
     def update(self):
+        logging.info("Streaming started.")
+        # self.cap.release()
         while True:
             if self.stopped is True:
                 break
@@ -50,7 +48,8 @@ class video_streamer():
                 logging.warning("No frames to read. Exiting...")
                 self.stopped = True
                 break
-
+        
+        logging.info("Streaming ended.")
         self.cap.release()
     
     def read(self):
@@ -67,10 +66,13 @@ class video_streamer():
             exit(0)
 
         fps_input_stream = self.cap.get(5) # hardware fps
-        logging.info(f"Hardware FPS: {fps_input_stream}")
-        
+        width, height = self.cap.get(3), self.cap.get(4)
+        logging.info(f"Camera Hardware Info: {width} x {height} @ {fps_input_stream}")
+
         self.cap.set(3,video_streamer.WIDTH) 
         self.cap.set(4,video_streamer.HEIGHT) 
+
+        logging.info(f"Streaming Resolution: {self.WIDTH} x {self.HEIGHT} @ {fps_input_stream}")
 
         # reading initial frame for initialization
         self.grabbed, self.last_frame = self.cap.read()
@@ -79,114 +81,45 @@ class video_streamer():
             logging.warning("No frames to read. Exiting...")
             exit(0)
 
-        if self.streaming_url != 0:
-            self.cap.release()
-            self.cap = None
-
-    # returns true if new frame is scheduled according to fps limit
-    def next(self, logging=True):
-        return self.scheduler.next(logging)
+        # if self.streaming_url != 0:
+        #     self.cap.release()
+        #     self.cap = None
 
     # closes the capture and shuts everything down
     def close(self):
-        logging.debug("Shutting down streamer.")
+        logging.info("Shutting down streamer.")
         self.stop()
-        cv2.destroyAllWindows() 
-        cv2.waitKey(1)
-        if self.streaming_url == 0:
-            self.cap.release()
+        self.cap.release()
     
     # returns a new image
     def get_image(self):
         try:
-            if self.streaming_url != 0:
-                self.cap = cv2.VideoCapture(self.streaming_url)
+            #if self.streaming_url != 0:
+            # self.cap = cv2.VideoCapture(self.streaming_url)
             self.grabbed, self.last_frame = self.cap.read()
+            # self.cap.release()
+            #if self.streaming_url != 0:
+            #    self.cap.release()
         except Exception as e:
             logging.warning("Couldnt capture or read video stream.")
             logging.warning(e.with_traceback)
-        finally:
-            if self.streaming_url != 0:
-                self.cap.release()
+        # finally:
+        #     if self.streaming_url != 0:
+        #         self.cap.release()
 
         return self.last_frame
-
-    # displays an image either provided to the function or it retrieves a new one
-    def show(self, img=None, window_title=None, overlay=True, simple=False):
-        # Output Image
-        if img is not None:
-            output_img = img
-        else:
-            if simple:
-                self.get_image()
-            output_img = self.last_frame
-        
-        # Window Title
-        # Note: openCV overwrites windows with the same
-        # title (useful for videos). Changing the window name
-        # will create a new window.
-        if not window_title:
-            window_title = video_streamer.default_window_title
-        
-        # Add overlay text
-        if overlay:
-            output_img = self.add_overlay(output_img)
-
-        # Show image with openCV
-        cv2.imshow(window_title, output_img)
-
     
-    # adds the overlays specified in the constructor
-    def add_overlay(self, img):
-        img = img.copy()
-        if 'border' in self.overlays:
-            img = self.get_border_overlay(img)
-
-        if 'fps' in self.overlays:
-            img = self.get_fps_overlay(img)
-
-        if 'bbox' in self.overlays:
-            pass
-        
-        if 'size' in self.overlays:
-            pass
-
-        return img
-
-    # adds the fps counter to the image
-    def get_fps_overlay(self, img):
-        return cv2.putText(img, "FPS: " + str(self.scheduler.get_fps()), video_streamer.fps_counter_position, 
-        video_streamer.font, 
-        video_streamer.fontScale,
-        video_streamer.fontColor,
-        video_streamer.thickness,
-        video_streamer.lineType)
-    
-    # setter for changing the border color according to vehicle actions (stoping, forward, etc)
-    def set_border_color(self, color):
-        self.border_color = color
-
-    # adds a border overlay to the image
-    def get_border_overlay(self, img):
-        bordersize = video_streamer.bordersize 
-        return cv2.copyMakeBorder(
-            img,
-            top=bordersize,
-            bottom=bordersize,
-            left=bordersize,
-            right=bordersize,
-            borderType=cv2.BORDER_CONSTANT,
-            value=self.border_color
-        ) 
-
 class fps_counter():
-    def __init__(self, fps_limit) -> None:
+    def __init__(self, fps_limit, print_logging=True) -> None:
         self.fps_limit = fps_limit
+        self.print_logging = print_logging
         self.prev = 0
         self.prev_frame_time = 0
         self.new_frame_time = 0
+        self.fps = 0
+        self.logging_counter = 1
 
-    def next(self, logging=True):
+    def next(self):
         time_elapsed = time.time() - self.prev
         if time_elapsed > 1./self.fps_limit:
             self.prev = time.time()
@@ -196,11 +129,113 @@ class fps_counter():
             self.fps = 1/(self.new_frame_time-self.prev_frame_time)
             self.prev_frame_time = self.new_frame_time
             self.fps = int(self.fps) + 1
-            if logging:
-                logging.debug(f"FPS: {self.fps}")
+
+            if self.print_logging and self.logging_counter % self.fps_limit == 0:
+                logging.info(f"FPS: {self.fps}")
+                self.logging_counter = 1
+            else:
+                self.logging_counter += 1
+
             return True
         else:
             return False
 
     def get_fps(self):
         return self.fps
+
+class video_player():
+
+    def __init__(self, 
+                fps_limit = 25,
+                title="Pi Car Demo"):
+
+        logging.info("Starting Video Player.")
+        self.fps_limit = fps_limit
+        self.scheduler = fps_counter(fps_limit)
+        self.input_frame = None
+
+        self.window_title = title
+
+        self.relative_size_text = ""
+        self.color = (100, 100, 100)
+    
+    def print_text(self, text, position=(600, 470), color= (0,0,0), size=0.4):
+        cv2.putText(self.output_image, text, position,
+            video_streamer.font, 
+            size,
+            color,
+            1,
+            video_streamer.lineType)
+
+    def update_frame(self, image, fps=True):
+        self.output_image = image
+        if fps:
+            self.get_fps_overlay()
+
+    def update_bboxes(self, bbox, bbox_title = "", bbox_subtitle = "", color = None):
+        if color is None:
+            color = self.color
+        self.bboxes = bbox
+        if bbox is not None:
+            self.draw_prediction(bbox_title, bbox_subtitle, color) 
+
+    def update_border(self, color):
+        self.color = color
+        self.get_border_overlay()
+
+    def show(self):
+        cv2.imshow(self.window_title, self.output_image)
+        self.output_image = None
+
+    def next(self):
+        return self.scheduler.next()
+    
+    def close(self):
+        logging.info("Closing Video Player.")
+        cv2.destroyAllWindows()
+        cv2.waitKey(1)      
+
+    def draw_prediction(self, title, subtitle, color):
+        box = self.bboxes
+        cv2.rectangle(
+            self.output_image,
+            (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), 
+            color, 
+            2)
+
+        cv2.putText(self.output_image, title, (int(box[0]), int(box[1]-8)),
+            video_streamer.font, 
+            0.4,
+            color,
+            1,
+            video_streamer.lineType)
+        
+        cv2.putText(self.output_image, f"{str(subtitle)}", (int(box[0]), int(box[3]+ 10)),
+            video_streamer.font, 
+            0.4,
+            color,
+            1,
+            video_streamer.lineType)
+        
+
+    # adds the fps counter to the image
+    def get_fps_overlay(self):
+        self.output_image = cv2.putText(self.output_image, "FPS: " + str(self.scheduler.get_fps()), video_streamer.fps_counter_position, 
+        video_streamer.font, 
+        video_streamer.fontScale,
+        video_streamer.fontColor,
+        video_streamer.thickness,
+        video_streamer.lineType)
+    
+    # adds a border overlay to the image
+    def get_border_overlay(self):
+        bordersize = video_streamer.bordersize 
+        self.output_image = cv2.copyMakeBorder(
+            self.output_image,
+            top=bordersize,
+            bottom=bordersize,
+            left=bordersize,
+            right=bordersize,
+            borderType=cv2.BORDER_CONSTANT,
+            value=self.color
+        ) 
