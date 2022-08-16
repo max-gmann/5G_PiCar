@@ -7,7 +7,7 @@ WORKDIR /home/5G_car
 COPY . .
 
 RUN apt-get update && apt-get install -y python3-opencv
-
+RUN apt-get install -y kmod kbd
 # install dependencies
 RUN conda env create -f environment.yml 
 SHELL ["conda", "run", "-n", "pi_car", "/bin/bash", "-c"]
