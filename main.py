@@ -1,4 +1,3 @@
-from email.mime import base
 import logging, time, sys
 import numpy as np
 import cv2
@@ -94,12 +93,12 @@ def main():
             key_name = key.name 
             event_type = key.event_type
             #setzt die Geschwidnigkeit des Autos
-            if key_name in [str(number) for number in range(1,8,1)]:
+            if key_name in [str(number) for number in range(0,10,1)]:
                 base_speed = 20
-                speed = ((int(key_name)-1) * 5)
+                speed = ((int(key_name)) * 5)
                 new_speed = str(base_speed + speed)
                 car.set_speed(new_speed)
-                logging.info(f"Setting speed to {new_speed}/50")
+                logging.info(f"Setting speed to {new_speed}/100")
             #schaltet zwischen manueller Steuerung und Automatikmodus um
             elif key_name in keymapping.keys():
                 if Mode.instance().manual_mode or key_name in ['c', 'm', 'f', 'p', 'space', 'h']:
@@ -161,7 +160,7 @@ def main():
                     player.print_text("4G", position=(15, 35),color=(0,0,255), size= 0.8)
                     player.print_text("Avg. Latency: [60, 100]ms", position=(15, 55),color=(0,0,255), size= 0.3)
 
-                player.print_text(f"Speed: {car.speed}/50", position=(520, 25), color=(255,255,255), size=0.5)
+                player.print_text(f"Speed: {car.speed}/100", position=(520, 25), color=(255,255,255), size=0.5)
                 player.show()
             
 
