@@ -9,8 +9,8 @@ class LineFollower():
         # self.high_b = np.uint8([0,0,0])
         # follow bright line
         self.threshold_dark = 60
-        self.threshold_light = 200
-        self.crop_factor = 0.75
+        self.threshold_light = 220
+        self.crop_factor = 0.7
         
         self.steering_angle = 0
         self.lenkangschlag = 45 # maximum
