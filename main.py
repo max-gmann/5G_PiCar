@@ -47,7 +47,7 @@ def main():
         def nothing():
             pass
 
-        # executed when pressed
+        # wird ausgeführt wenn eine Taste gedrückt wird
         keymapping = {
             "w": car.forward,
             "s": car.backward,
@@ -65,7 +65,7 @@ def main():
             'h': Mode.instance().toggle_line_color
         }
         
-        # executed when depressed
+        # wird ausgeführt wenn eine Taste losgelassen wird
         reverse_keymapping = {
             "w": car.stop,
             "s": car.stop,
@@ -92,11 +92,12 @@ def main():
         def callback_fnc(key):
             key_name = key.name 
             event_type = key.event_type
-            
+            #setzt die Geschwidnigkeit des Autos
             if key_name in [str(number) for number in range(1,6,1)]:
                 speed = str(int(key_name) * 10)
                 car.set_speed(speed)
                 logging.info(f"Setting speed to {str(int(key_name) * 10)}/50")
+            #schaltet zwischen manueller Steuerung und Automatikmodus um
             elif key_name in keymapping.keys():
                 if Mode.instance().manual_mode or key_name in ['c', 'm', 'f', 'p', 'space', 'h']:
                     if event_type == 'down':
@@ -107,10 +108,10 @@ def main():
         # register keyboard listener for manual controls
         keyboard.hook(callback_fnc) 
 
-        # main control loop
+        # Hauptschleife
         while True:
             
-            # read frame from webcam streamer
+            # liest die Bilder ein
             frame = streamer.read()        
 
 
@@ -120,19 +121,21 @@ def main():
                 if not mode.manual_mode:
                     steering_counter += 1
                     
+                    # ruft die Stopschild und Personenerkennung auf
                     if mode.stop_detection:
                         stop_sign_detector.get_prediction(frame)
                         control_output, stop_bbox, border_color, relative_size_stop = stop_sign_detector.analyse_image(frame)
                         person_detector.prediction = stop_sign_detector.prediction
                         person_bbox, relative_size_person = person_detector.analyse_image(frame)
-
+                    
+                    # ruft die Linienerkennung auf und setzt den Lenkwinkel
                     if mode.line_follow:
                         if steering_counter % steering_update_freq == 0:
                             line_color = "dark" if mode.line_color_dark else "light"
                             steering_angle = line_follower.get_streering_angle(frame, line_color)
                             car.turn(steering_angle)
                             steering_counter = 0 
-                    
+                    # zeichnet das Overlay ins Webcambild
                         line_follower.draw_annotations(frame)
 
                     if control_output == "go" and Mode.instance().auto_run:
@@ -147,7 +150,7 @@ def main():
                 else:
                     player.print_text("Manual Mode", (495, 460), (255,255,255), size= 0.6)
 
-
+                # informiert ob es 4G oder 5G Modus ist
                 if mode.is_5g:
                     player.print_text("5G", position=(15, 35),color=(0,255,0), size= 0.8)
                     player.print_text("Avg. Latency: [0, 40]ms", position=(15, 55),color=(0,255,0), size= 0.3)

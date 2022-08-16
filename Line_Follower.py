@@ -4,20 +4,22 @@ import numpy as np
 
 class LineFollower():
     def __init__(self) -> None:
-        # follow dark line
+        # Werte zum Folgen einer dunklen Linie
         # self.low_b = np.uint8([60,60,60])
         # self.high_b = np.uint8([0,0,0])
-        # follow bright line
+        # Werte zum Folgen einer hellen Linie
         self.threshold_dark = 60
         self.threshold_light = 220
         self.crop_factor = 0.7
         
+        #Lenkwinkel
         self.steering_angle = 0
         self.lenkangschlag = 45 # maximum
 
         self.cx = 0
         self.cy = 0
-
+        
+        #Dient zum zurechtschneiden des erhalten Bildmaterials
     def __crop_frame(self, image):
         image = image.copy()
         height, width, _ = image.shape
@@ -28,7 +30,8 @@ class LineFollower():
         cropped_frame, offset = self.__crop_frame(frame)
         cropped_frame = cv2.GaussianBlur(cropped_frame, (5,5), 0)
         cropped_frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2GRAY)
-        # cv2.imshow("debug", cropped_frame)
+        cv2.imshow("debug", cropped_frame)
+        #Modus zum Folgen einer hellen oder dunklen Linie
         if mode == 'dark':
             ret, mask = cv2.threshold(cropped_frame, self.threshold_dark, 255, cv2.THRESH_BINARY_INV)
         else:
@@ -36,11 +39,13 @@ class LineFollower():
 
         cv2.imshow("mask", mask)
         # mask = cv2.inRange(cropped_frame, self.high_b, self.low_b)
+        #ermittelt die Kontrastkonturen im Bild
         contours, hierarchy = cv2.findContours(mask, 1, cv2.CHAIN_APPROX_NONE)
         if len(contours) > 0 :
             c = max(contours, key=cv2.contourArea)
             M = cv2.moments(c)
             if M["m00"] !=0 :
+                #setzt die Werte wo sich der Mittelpunkt der Linie befindet
                 self.cx = int(M['m10']/M['m00'])
                 self.cy = int(M['m01']/M['m00']) + offset
                 # print("CX : "+str(cx)+"  CY : "+str(cy))
@@ -49,6 +54,7 @@ class LineFollower():
                 # 0 = mitte des bildes
                 relative_position = self.cx / (frame_width / 2) -1
 
+            #setzt den Lenkwinkel
                 self.steering_angle = int(self.lenkangschlag * relative_position)
                 
                 # print("Steering angle:", self.steering_angle)
@@ -58,7 +64,7 @@ class LineFollower():
         
         
         return self.steering_angle
-
+        #zeichnet die Linien in das Videofenster auf dem PC
     def draw_annotations(self, frame):
         frame_height, frame_width, _ = frame.shape
 
