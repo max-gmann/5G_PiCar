@@ -1,3 +1,4 @@
+from email.mime import base
 import logging, time, sys
 import numpy as np
 import cv2
@@ -37,7 +38,7 @@ def main():
         person_detector = person()
 
         line_follower = LineFollower()
-        steering_update_freq = 2 # relative to framerate, can never exeed framerate, every x frames
+        steering_update_freq = 3 # relative to framerate, can never exeed framerate, every x frames
         steering_counter = 0
         control_output = "go"
         
@@ -93,10 +94,12 @@ def main():
             key_name = key.name 
             event_type = key.event_type
             #setzt die Geschwidnigkeit des Autos
-            if key_name in [str(number) for number in range(1,6,1)]:
-                speed = str(int(key_name) * 10)
-                car.set_speed(speed)
-                logging.info(f"Setting speed to {str(int(key_name) * 10)}/50")
+            if key_name in [str(number) for number in range(1,8,1)]:
+                base_speed = 20
+                speed = ((int(key_name)-1) * 5)
+                new_speed = str(base_speed + speed)
+                car.set_speed(new_speed)
+                logging.info(f"Setting speed to {new_speed}/50")
             #schaltet zwischen manueller Steuerung und Automatikmodus um
             elif key_name in keymapping.keys():
                 if Mode.instance().manual_mode or key_name in ['c', 'm', 'f', 'p', 'space', 'h']:
@@ -153,10 +156,10 @@ def main():
                 # informiert ob es 4G oder 5G Modus ist
                 if mode.is_5g:
                     player.print_text("5G", position=(15, 35),color=(0,255,0), size= 0.8)
-                    player.print_text("Avg. Latency: [0, 40]ms", position=(15, 55),color=(0,255,0), size= 0.3)
+                    player.print_text("Avg. Latency: [<1, 10]ms", position=(15, 55),color=(0,255,0), size= 0.3)
                 else:
                     player.print_text("4G", position=(15, 35),color=(0,0,255), size= 0.8)
-                    player.print_text("Avg. Latency: [50, 250]ms", position=(15, 55),color=(0,0,255), size= 0.3)
+                    player.print_text("Avg. Latency: [60, 100]ms", position=(15, 55),color=(0,0,255), size= 0.3)
 
                 player.print_text(f"Speed: {car.speed}/50", position=(520, 25), color=(255,255,255), size=0.5)
                 player.show()

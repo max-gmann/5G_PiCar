@@ -198,3 +198,4 @@ class pi_car:
 
     def camera_ok(self):
         requests.get(self.control_url, self.cali_ok)
+

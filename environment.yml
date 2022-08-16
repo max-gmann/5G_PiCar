@@ -8,8 +8,8 @@ dependencies:
   - pip
   - pytorch
   - torchvision
-  - opencv
   - pip:
+    - opencv-python
     - requests
     - Pillow
     - PyYAML
