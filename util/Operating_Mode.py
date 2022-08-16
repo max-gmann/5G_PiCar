@@ -14,16 +14,11 @@ class Mode:
         self.stop_detection = False   
         
         self.auto_run = True    
-        self.line_color_dark = True
+        self.line_color_dark = False
 
     def toggle_autonomy_mode(self):
         if self.manual_mode:
-            logging.info("Disabling manual mode in 3.")
-            time.sleep(1)
-            logging.info("Disabling manual mode in 2.")
-            time.sleep(1)
-            logging.info("Disabling manual mode in 1.")
-            time.sleep(1)
+            logging.info("Disabling manual mode.")
         else:
             logging.info("Enabling manual mode.")
         self.manual_mode = not self.manual_mode
@@ -47,3 +42,6 @@ class Mode:
     def toggle_line_color(self):
         logging.info("Toggling line color to follow.")
         self.line_color_dark = not self.line_color_dark
+
+    def get_connection_mode(self):
+        return self.is_5g

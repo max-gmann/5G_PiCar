@@ -9,8 +9,8 @@ class LineFollower():
         # self.high_b = np.uint8([0,0,0])
         # Werte zum Folgen einer hellen Linie
         self.threshold_dark = 60
-        self.threshold_light = 200
-        self.crop_factor = 0.75
+        self.threshold_light = 220
+        self.crop_factor = 0.7
         
         #Lenkwinkel
         self.steering_angle = 0
@@ -26,17 +26,16 @@ class LineFollower():
         new_height = int(height * self.crop_factor)
         return image[new_height:height, 0:width], new_height
 
-    #ermittelt den notwendigen Lenkwinkel um der Linie zu folgen
-    def get_streering_angle(self, frame, mode='dark'):
+    def get_streering_angle(self, frame, mode='light'):
         cropped_frame, offset = self.__crop_frame(frame)
         cropped_frame = cv2.GaussianBlur(cropped_frame, (5,5), 0)
         cropped_frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2GRAY)
         cv2.imshow("debug", cropped_frame)
         #Modus zum Folgen einer hellen oder dunklen Linie
         if mode == 'dark':
-            ret, mask = cv2.threshold(cropped_frame, self.threshold_dark, 255, cv2.THRESH_BINARY)
+            ret, mask = cv2.threshold(cropped_frame, self.threshold_dark, 255, cv2.THRESH_BINARY_INV)
         else:
-            ret, mask = cv2.threshold(cropped_frame, self.threshold_light, 255, cv2.THRESH_BINARY_INV)
+            ret, mask = cv2.threshold(cropped_frame, self.threshold_light, 255, cv2.THRESH_BINARY)
 
         cv2.imshow("mask", mask)
         # mask = cv2.inRange(cropped_frame, self.high_b, self.low_b)

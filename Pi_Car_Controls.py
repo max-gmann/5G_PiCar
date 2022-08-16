@@ -30,7 +30,11 @@ class pi_car:
                 default_camera_turn_angle_ud = 20):# up down
 
         self.dns_name = "raspberrypi"
-        self.ip_adress = socket.gethostbyname(self.dns_name)
+        try:
+            self.ip_adress = socket.gethostbyname(self.dns_name)
+        except:
+            # self.ip_adress = input("Please input IP adress of the pi car: ")
+            self.ip_adress = "192.168.0.168"
         self.base_url = "http://" + self.ip_adress
         self.control_url = self.base_url + ":8000/run/"
         self.calibration_url = self.base_url + ":8000/cali/"
@@ -60,8 +64,6 @@ class pi_car:
     def __enter__(self):
         logging.info("System Startup...")
         
-        
-
         # import asyncio
         # import aiohttp
         # from aiohttp.client import ClientSession

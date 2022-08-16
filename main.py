@@ -114,11 +114,6 @@ def main():
             # liest die Bilder ein
             frame = streamer.read()        
 
-            # zufällig generierte Latenz zur Simulation des 4G Modus
-            if not mode.is_5g:
-                random_delay = abs(np.random.normal(loc=80, scale=20))
-                print(random_delay)
-                time.sleep(random_delay / 1000)    
 
             player.update_frame(frame, fps=True)     # update player with current frame and add fps annotation (doesnt display it yet)
 

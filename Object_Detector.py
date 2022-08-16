@@ -61,7 +61,7 @@ class person(obstacle):
 
 class stop_sign(obstacle):
 
-    RELATIVE_SIZE_TO_STOP = 0.25
+    RELATIVE_SIZE_TO_STOP = 0.15
 
     FRAMES_TO_CONFIRM_START = 12
     FRAMES_TO_CONFIRM_END = 50

@@ -3,6 +3,9 @@ import time
 import logging
 # logging.basicConfig(format='[%(asctime)s | %(module)s | %(levelname)s] - %(message)s', level=logging.INFO)
 from threading import Thread
+import numpy as np
+
+from util.Operating_Mode import Mode
 
 class video_streamer():
     WIDTH = 640
@@ -25,6 +28,11 @@ class video_streamer():
                 streaming_url = 0):
 
         self.streaming_url = streaming_url
+
+        self.is_5g = Mode.instance().get_connection_mode
+        self.delay_frames_4g = 5
+        self.frame_buffer = []
+        self.buffer_size = 50
         
         self.__set_capture()
 
@@ -39,11 +47,12 @@ class video_streamer():
 
     def update(self):
         logging.info("Streaming started.")
-        # self.cap.release()
+        connection_changed = False
         while True:
             if self.stopped is True:
                 break
             self.get_image()
+
             if self.grabbed is False:
                 logging.warning("No frames to read. Exiting...")
                 self.stopped = True
@@ -53,7 +62,10 @@ class video_streamer():
         self.cap.release()
     
     def read(self):
-        return self.last_frame
+        if self.is_5g():
+            return self.frame_buffer[-1]
+        else:
+            return self.frame_buffer[-self.delay_frames_4g]
 
     def stop(self):
         self.stopped = True
@@ -76,14 +88,11 @@ class video_streamer():
 
         # reading initial frame for initialization
         self.grabbed, self.last_frame = self.cap.read()
+        self.frame_buffer.append(self.last_frame)
 
         if self.grabbed is False:
             logging.warning("No frames to read. Exiting...")
             exit(0)
-
-        # if self.streaming_url != 0:
-        #     self.cap.release()
-        #     self.cap = None
 
     # closes the capture and shuts everything down
     def close(self):
@@ -94,18 +103,13 @@ class video_streamer():
     # returns a new image
     def get_image(self):
         try:
-            #if self.streaming_url != 0:
-            # self.cap = cv2.VideoCapture(self.streaming_url)
-            self.grabbed, self.last_frame = self.cap.read()
-            # self.cap.release()
-            #if self.streaming_url != 0:
-            #    self.cap.release()
+                self.grabbed, self.last_frame = self.cap.read()
+                self.frame_buffer.append(self.last_frame)
+                if len(self.frame_buffer) >= self.buffer_size:
+                    self.frame_buffer.pop(0)
         except Exception as e:
             logging.warning("Couldnt capture or read video stream.")
             logging.warning(e.with_traceback)
-        # finally:
-        #     if self.streaming_url != 0:
-        #         self.cap.release()
 
         return self.last_frame
     
