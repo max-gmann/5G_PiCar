@@ -24,11 +24,11 @@ class LineFollower():
         new_height = int(height * self.crop_factor)
         return image[new_height:height, 0:width], new_height
 
-    def get_streering_angle(self, frame, mode='dark'):
+    def get_streering_angle(self, frame, mode='light'):
         cropped_frame, offset = self.__crop_frame(frame)
         cropped_frame = cv2.GaussianBlur(cropped_frame, (5,5), 0)
         cropped_frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2GRAY)
-        cv2.imshow("debug", cropped_frame)
+        # cv2.imshow("debug", cropped_frame)
         if mode == 'dark':
             ret, mask = cv2.threshold(cropped_frame, self.threshold_dark, 255, cv2.THRESH_BINARY_INV)
         else:
