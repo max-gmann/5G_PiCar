@@ -10,6 +10,10 @@ anaconda: https://www.anaconda.com/
 pip: https://pypi.org/project/pip/
 
 
+Der Start des Servers zum Steuern des Autos erfolgt automatisch auf dem Rasperry Pi. Dies wurde mit einem cron Job auf dem Pi umgesetzt, welcher nach dem Start ausgeführt wird.
+Über diesen Server werden die Befehle der nachfolgenden Dateien auf dem Pi und somit dem Fahrzeug ausgeführt.
+Im folgenden werden alle Dateien und ihre Funktionsweise beschrieben.
+
 Dateien: 
 main.py:
 -erstellt eine Instanz der "pi_car" Klasse aus der Datei "Pi_Car_Controls.py" --> Stuerung des Autos und der Kamera 
@@ -36,10 +40,3 @@ Pi_Car_Controls.py:
 
 Streaming_Controls.py:
 -Beinhaltet alle Funktionen die dazu dienen das Kamerabild zu erhalten und verwertbar zu machen
-
-
-
-
-für die präsentation niedrige cpu und memory auslastung auf pi dokumentieren
-
-
