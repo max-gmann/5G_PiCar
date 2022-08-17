@@ -11,13 +11,13 @@ Mit diesem Programm kann das Pi Car einer Linie folgen und Stopschilder erkennen
 Ziel ist es den Latenzunterschied zwischen 4G und 5G zu verdeutlichen.
 
 ###### Verwendete Libraries/Pakete:
-numpy: https://numpy.org/
-OpenCV: https://opencv.org/
-mathplotlib: https://matplotlib.org/
-PyToch: https://pytorch.org/ 
-conda-forge: https://conda-forge.org/
-anaconda: https://www.anaconda.com/ 
-pip: https://pypi.org/project/pip/
+- numpy: https://numpy.org/
+- OpenCV: https://opencv.org/
+- mathplotlib: https://matplotlib.org/
+- PyToch: https://pytorch.org/ 
+- conda-forge: https://conda-forge.org/
+- anaconda: https://www.anaconda.com/ 
+- pip: https://pypi.org/project/pip/
 
 ### Installation
 Um den Code auf einem Windows Rechner auszuführen zu können müssen folgende Schritte befolgt werden.
