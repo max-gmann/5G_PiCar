@@ -72,20 +72,20 @@ Gegebenenfalls müssen also die Schritte ab Schritt 5. erneut ausgeführt werden
 Wurde das Fahrzeug erfolgreich gestartet, kann die Steuerung des Fahrzeugs beginnen. Es wird im manuellen Modus gestartet. 
 In diesem Modus kann über die Tastatur mit folgender Tastenbelegung gesteuert werden:
 
-<b>W</b>		vorwärts
-<b>S</b>		rückwärts
-<b>A</b>		links
-<b>D</b>		rechts
-
-<b>Q</b>		Programm beenden
-<b>C</b>		4G / 5G Verbindungsmodus umschalten 
-<b>M</b>		Umschalten manueller/automatischer Modus
-<b>H</b>		Umschalten Erkennung heller/dunkler Linie
-<b>F</b>		Linienerkennung aktivieren / deaktivieren (nur automatischer Modus)
-<b>P</b>		Stoppschilderkennung aktivieren/deaktivieren (nur automatischer Modus)
-<b>Leertaste</b>	Automatisches Vorwärtsfahren umschalten (nur automatischer Modus)
-<b>Pfeiltasten</b>	Feinjustierung der Kamera
-<b>1 bis 9</b>		Geschwindigkeit in 5-Schritten anpassen
+<b>W</b>		vorwärts<br>
+<b>S</b>		rückwärts<br>
+<b>A</b>		links<br>
+<b>D</b>		rechts<br>
+<br>
+<b>Q</b>		Programm beenden<br>
+<b>C</b>		4G / 5G Verbindungsmodus umschalten <br>
+<b>M</b>		Umschalten manueller/automatischer Modus<br>
+<b>H</b>		Umschalten Erkennung heller/dunkler Linie<br>
+<b>F</b>		Linienerkennung aktivieren / deaktivieren (nur automatischer Modus)<br>
+<b>P</b>		Stoppschilderkennung aktivieren/deaktivieren (nur automatischer Modus)<br>
+<b>Leertaste</b>	Automatisches Vorwärtsfahren umschalten (nur automatischer Modus)<br>
+<b>Pfeiltasten</b>	Feinjustierung der Kamera<br>
+<b>1 bis 9</b>		Geschwindigkeit in 5-Schritten anpassen<br>
 
 In dem automatischen Modus kann die Erkennung von heller und dunkler Linie umgeschaltet werden, sowie in den manuellen Modus
 zurück gewechselt werden.
