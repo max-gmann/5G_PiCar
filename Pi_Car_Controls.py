@@ -33,8 +33,11 @@ class pi_car:
         try:
             self.ip_adress = socket.gethostbyname(self.dns_name)
         except:
-            # self.ip_adress = input("Please input IP adress of the pi car: ")
-            self.ip_adress = "192.168.0.168"
+            try:
+                socket.gethostbyname("192.168.0.168")
+                self.ip_adress = "192.168.0.168"
+            except:
+                self.ip_adress = input("Please input IP adress of the pi car: ")
         self.base_url = "http://" + self.ip_adress
         self.control_url = self.base_url + ":8000/run/"
         self.calibration_url = self.base_url + ":8000/cali/"
@@ -198,3 +201,4 @@ class pi_car:
 
     def camera_ok(self):
         requests.get(self.control_url, self.cali_ok)
+

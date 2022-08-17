@@ -1,7 +1,9 @@
+archive/
 venv/
 model_final.pth
 test
 *.pth
+*/__pycache__/
 __pycache__/
 .gitignore
 .vscode

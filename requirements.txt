@@ -1,0 +1,16 @@
+opencv-python
+requests
+Pillow
+PyYAML
+matplotlib
+pandas
+keyboard
+numpy
+tqdm
+seaborn
+ipython
+psutil
+protobuf==3.20.1
+--extra-index-url https://download.pytorch.org/whl/cu116
+torch
+torchvision

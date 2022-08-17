@@ -11,6 +11,7 @@ class obstacle():
         self.relative_size = None
 
     def __build_yolo_model(self):
+        print(torch.cuda.is_available())
         self.predictor = torch.hub.load('ultralytics/yolov5', 'yolov5n')
 
     @abstractclassmethod
