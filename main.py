@@ -160,7 +160,7 @@ def main():
                     player.print_text("4G", position=(15, 35),color=(0,0,255), size= 0.8)
                     player.print_text("Avg. Latency: [60, 100]ms", position=(15, 55),color=(0,0,255), size= 0.3)
 
-                player.print_text(f"Speed: {car.speed}/100", position=(520, 25), color=(255,255,255), size=0.5)
+                player.print_text(f"Speed: {car.speed}/100", position=(510, 25), color=(255,255,255), size=0.5)
                 player.show()
             
 
